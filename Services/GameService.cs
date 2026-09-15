@@ -1,61 +1,70 @@
-﻿using GameStore.Api.Models;
-using System.Collections.Concurrent;
+﻿using GameStore.Api.Data;
+using GameStore.Api.Models;
 
 namespace GameStore.Api.Services
 {
     public class GameService : IGameService
     {
-        int currId = 0;
+        private readonly GameStoreContext _db;
 
-        private readonly ConcurrentDictionary<int, Game> _games = new();
-
+        public GameService(GameStoreContext db)
+        {
+            this._db = db;
+        }
 
         public IEnumerable<Game> GetAllGames()
         {
-            return _games.Values;
+            return _db.Games;
         }
 
 
         public bool TryGetGameById(int id, out Game game)
         {
-            return _games.TryGetValue(id, out game);
+            game = _db.Games.FirstOrDefault(g => g.Id == id);
+
+            return game != null;
         }
 
         public Game CreateGame(CreateGameRequest req)
         {
-            // Generate new id.
-            var id = Interlocked.Increment(ref currId);
+            var g = new Game { Name = req.Name, Price = req.Price, Genre = req.Genre };
 
-            var g = new Game { Id = id, Name = req.Name, Price = req.Price, Genre = req.Genre };
-
-            _games[id] = g;
+            _db.Add(g);
+            _db.SaveChanges();
 
             return g;
         }
 
         public bool UpdateGame(int gameId, UpdateGameRequest req)
         {
-            if(_games.TryGetValue(gameId, out var g))
+            var game = _db.Games.FirstOrDefault(g => g.Id == gameId);
+
+            if(game == null)
             {
-                g.Name = req.Name;
-                g.Price = req.Price;
-                g.Genre = req.Genre;
-                
-                return true;
+                return false;
             }
 
-            return false;
+            game.Price = req.Price;
+            game.Genre = req.Genre;
+            game.Name = req.Name;
+
+            _db.SaveChanges();
+
+            return true;
         }
 
         public  bool TryDeleteGame(int gameId, out Game g)
         {
-            if(_games.TryRemove(gameId, out g))
-            {
-                return true;
-            }
+            g = _db.Games.FirstOrDefault(g => g.Id == gameId);
 
-            g = null;
-            return false;
+            if (g == null)
+                return false;
+
+            _db.Games.Remove(g);
+
+            _db.SaveChanges();
+
+            return true;
         }
     }
 }
