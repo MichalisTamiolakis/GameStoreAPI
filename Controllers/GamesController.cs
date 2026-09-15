@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using GameStore.Api.Models;
-using System.Collections.Concurrent;
-
+using GameStore.Api.Services;
 
 namespace GameStore.Api.Controllers
 {
@@ -9,24 +8,23 @@ namespace GameStore.Api.Controllers
     [Route("api/games")]
     public class GamesController : ControllerBase
     {
-        int currId = 0;
+        private IGameService _gameService;
 
-        private readonly ConcurrentDictionary<int, Game> _games = new ();
-
-        public record GameDTO(string Name, decimal Price, string Genre);
-
-        public GamesController() { }
+        public GamesController(IGameService gameService) 
+        {
+            _gameService = gameService;
+        }
 
         [HttpGet]
         public ActionResult<IEnumerable<Game>> GetAllGames()
         {
-            return Ok(_games.Values);
+            return Ok(_gameService.GetAllGames());
         }
 
         [HttpGet("{id}")]
         public ActionResult<Game> GetGameById([FromRoute] int id)
         {
-            if (_games.TryGetValue(id, out var game))
+            if (_gameService.TryGetGameById(id, out var game))
             {
                 return Ok(game);
             }
@@ -35,31 +33,22 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult CreateGame([FromBody] GameDTO reqParams)
+        public ActionResult CreateGame([FromBody] CreateGameRequest reqParams)
         {
-            int generatedId = Interlocked.Increment(ref currId);
-
-            Game game = new Game { Id = generatedId, Name = reqParams.Name, Price = reqParams.Price, Genre = reqParams.Genre };
-
-            _games[game.Id] = game;
+            var g = _gameService.CreateGame(reqParams);
 
             return CreatedAtAction(nameof(GetGameById),
-                new { id = game.Id },
-                game);
+                new { id = g.Id },
+                g);
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateGame([FromRoute] int id, [FromBody] GameDTO reqParams)
+        public ActionResult UpdateGame([FromRoute] int id, [FromBody] UpdateGameRequest reqParams)
         {
-            if(_games.TryGetValue(id, out var game))
+            if(_gameService.UpdateGame(id, reqParams))
             {
-                game.Price = reqParams.Price;
-                game.Name = reqParams.Name;
-                game.Genre = reqParams.Genre;
-
                 return Ok();
             }
-
 
             return NotFound();
         }
@@ -67,12 +56,13 @@ namespace GameStore.Api.Controllers
         [HttpDelete("{id}")]
         public ActionResult DeleteGame([FromRoute] int id)
         {
-            if(!_games.TryRemove(id, out _))
+            if(_gameService.TryDeleteGame(id, out _))
             {
-                return NotFound();
+                return NoContent();
             }
-
-            return NoContent();
+            
+            
+            return NotFound();
         }
 
     }
