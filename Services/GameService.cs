@@ -1,5 +1,6 @@
 ﻿using GameStore.Api.Data;
 using GameStore.Api.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Api.Services
 {
@@ -18,26 +19,25 @@ namespace GameStore.Api.Services
         }
 
 
-        public bool TryGetGameById(int id, out Game game)
+        public async Task<Game?> TryGetGameById(int id)
         {
-            game = _db.Games.FirstOrDefault(g => g.Id == id);
-
-            return game != null;
+            return await _db.Games.FirstOrDefaultAsync(g => g.Id == id);
         }
 
-        public Game CreateGame(CreateGameRequest req)
+        public async Task<Game> CreateGame(CreateGameRequest req)
         {
             var g = new Game { Name = req.Name, Price = req.Price, Genre = req.Genre };
 
-            _db.Add(g);
-            _db.SaveChanges();
+            await _db.AddAsync(g);
+            
+            await _db.SaveChangesAsync();
 
             return g;
         }
 
-        public bool UpdateGame(int gameId, UpdateGameRequest req)
+        public async Task<bool> UpdateGame(int gameId, UpdateGameRequest req)
         {
-            var game = _db.Games.FirstOrDefault(g => g.Id == gameId);
+            var game = await _db.Games.FirstOrDefaultAsync(g => g.Id == gameId);
 
             if(game == null)
             {
@@ -48,23 +48,23 @@ namespace GameStore.Api.Services
             game.Genre = req.Genre;
             game.Name = req.Name;
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             return true;
         }
 
-        public  bool TryDeleteGame(int gameId, out Game g)
+        public  async Task<Game?> TryDeleteGame(int gameId)
         {
-            g = _db.Games.FirstOrDefault(g => g.Id == gameId);
+            var gameToBeDeleted = await _db.Games.FirstOrDefaultAsync(g => g.Id == gameId);
 
-            if (g == null)
-                return false;
+            if (gameToBeDeleted == null)
+                return gameToBeDeleted;
 
-            _db.Games.Remove(g);
+            _db.Games.Remove(gameToBeDeleted);
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
-            return true;
+            return gameToBeDeleted;
         }
     }
 }

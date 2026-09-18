@@ -22,20 +22,22 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Game> GetGameById([FromRoute] int id)
+        public async Task<ActionResult<Game>> GetGameById([FromRoute] int id)
         {
-            if (_gameService.TryGetGameById(id, out var game))
+            var g = await _gameService.TryGetGameById(id);
+
+            if (g != null)
             {
-                return Ok(game);
+                return Ok(g);
             }
 
             return NotFound();
         }
 
         [HttpPost]
-        public ActionResult CreateGame([FromBody] CreateGameRequest reqParams)
+        public async Task<ActionResult> CreateGame([FromBody] CreateGameRequest reqParams)
         {
-            var g = _gameService.CreateGame(reqParams);
+            var g = await _gameService.CreateGame(reqParams);
 
             return CreatedAtAction(nameof(GetGameById),
                 new { id = g.Id },
@@ -43,9 +45,9 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateGame([FromRoute] int id, [FromBody] UpdateGameRequest reqParams)
+        public async Task<ActionResult> UpdateGame([FromRoute] int id, [FromBody] UpdateGameRequest reqParams)
         {
-            if(_gameService.UpdateGame(id, reqParams))
+            if(await _gameService.UpdateGame(id, reqParams))
             {
                 return Ok();
             }
@@ -54,13 +56,14 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public ActionResult DeleteGame([FromRoute] int id)
+        public async Task<ActionResult> DeleteGame([FromRoute] int id)
         {
-            if(_gameService.TryDeleteGame(id, out _))
+            var g = await _gameService.TryDeleteGame(id);
+
+            if(g != null)
             {
                 return NoContent();
             }
-            
             
             return NotFound();
         }

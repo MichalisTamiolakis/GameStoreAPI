@@ -6,12 +6,12 @@ namespace GameStore.Api.Services
     {
         IEnumerable<Game> GetAllGames();
 
-        bool TryGetGameById(int id, out Game game);
+        Task<Game?> TryGetGameById(int id);
 
-        Game CreateGame(CreateGameRequest req);
+        Task<Game> CreateGame(CreateGameRequest req);
 
-        bool UpdateGame(int gameId, UpdateGameRequest req);
+        Task<bool> UpdateGame(int gameId, UpdateGameRequest req);
 
-        bool TryDeleteGame(int gameId, out Game g);
+        Task<Game?> TryDeleteGame(int gameId);
     }
 }

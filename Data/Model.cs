@@ -7,7 +7,7 @@
     {
         public DbSet<Game> Games { get; set;  }
 
-        public GameStoreContext()
+        public GameStoreContext(DbContextOptions<GameStoreContext> options) : base(options)
         {
         }
     }
