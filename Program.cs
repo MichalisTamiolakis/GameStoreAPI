@@ -16,7 +16,12 @@ builder.Services.AddDbContext<GameStoreContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("GameStoreDB")));
 
+builder.Services.AddExceptionHandler<ExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
