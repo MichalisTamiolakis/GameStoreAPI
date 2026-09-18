@@ -5,7 +5,10 @@
 
     public class GameStoreContext : DbContext
     {
+        public DbSet<User> Users { get; set; }
+
         public DbSet<Game> Games { get; set;  }
+
 
         public GameStoreContext(DbContextOptions<GameStoreContext> options) : base(options)
         {

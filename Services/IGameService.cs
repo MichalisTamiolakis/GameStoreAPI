@@ -4,7 +4,7 @@ namespace GameStore.Api.Services
 {
     public interface IGameService
     {
-        IEnumerable<Game> GetAllGames();
+        Task<IEnumerable<Game>> GetAllGames();
 
         Task<Game?> TryGetGameById(int id);
 

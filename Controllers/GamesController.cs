@@ -16,9 +16,9 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Game>> GetAllGames()
+        public async Task<ActionResult<IEnumerable<Game>>> GetAllGames()
         {
-            return Ok(_gameService.GetAllGames());
+            return Ok(await _gameService.GetAllGames());
         }
 
         [HttpGet("{id}")]

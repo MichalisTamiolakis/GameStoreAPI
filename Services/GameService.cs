@@ -13,9 +13,9 @@ namespace GameStore.Api.Services
             this._db = db;
         }
 
-        public IEnumerable<Game> GetAllGames()
+        public async Task<IEnumerable<Game>> GetAllGames()
         {
-            return _db.Games;
+            return await _db.Games.ToArrayAsync();
         }
 
 
@@ -44,9 +44,22 @@ namespace GameStore.Api.Services
                 return false;
             }
 
-            game.Price = req.Price;
-            game.Genre = req.Genre;
-            game.Name = req.Name;
+            // Update only given fields.
+
+            if(req.Name is not null)
+            {
+                game.Name = req.Name;
+            }
+
+            if(req.Price is not null)
+            {
+                game.Price = req.Price.Value;
+            }
+
+            if (req.Genre is not null)
+            {
+                game.Genre = req.Genre;
+            }
 
             await _db.SaveChangesAsync();
 
@@ -58,7 +71,7 @@ namespace GameStore.Api.Services
             var gameToBeDeleted = await _db.Games.FirstOrDefaultAsync(g => g.Id == gameId);
 
             if (gameToBeDeleted == null)
-                return gameToBeDeleted;
+                return null;
 
             _db.Games.Remove(gameToBeDeleted);
 
