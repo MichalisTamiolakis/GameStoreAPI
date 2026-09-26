@@ -4,14 +4,14 @@ namespace GameStore.Api.Services
 {
     public interface IGameService
     {
-        Task<IEnumerable<Game>> GetAllGames();
+        Task<IEnumerable<GameResponse>> GetAllGames();
 
-        Task<Game?> TryGetGameById(int id);
+        Task<GameResponse?> TryGetGameById(int id);
 
-        Task<Game> CreateGame(CreateGameRequest req);
+        Task<GameResponse> CreateGame(CreateGameRequest req);
 
         Task<bool> UpdateGame(int gameId, UpdateGameRequest req);
 
-        Task<Game?> TryDeleteGame(int gameId);
+        Task<GameResponse?> TryDeleteGame(int gameId);
     }
 }

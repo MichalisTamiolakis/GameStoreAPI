@@ -1,5 +1,6 @@
 ﻿using GameStore.Api.Data;
 using GameStore.Api.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Api.Services
@@ -8,23 +9,23 @@ namespace GameStore.Api.Services
     {
         private readonly GameStoreContext _db;
 
-        public UserService(GameStoreContext db)
+        public UserService(GameStoreContext db, IGameService gameService)
         {
             this._db = db;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsers()
+        public async Task<IEnumerable<UserResponse>> GetAllUsers()
         {
-            return await _db.Users.ToArrayAsync();
+            return await _db.Users.Select(u => new UserResponse(u.Id, u.Name, u.Surname, u.DisplayName, u.Email)).ToArrayAsync();
         }
 
 
-        public async Task<User?> TryGetUserById(int id)
+        public async Task<UserResponse?> TryGetUserById(int id)
         {
-            return await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return await _db.Users.Select(u => new UserResponse(u.Id, u.Name, u.Surname, u.DisplayName, u.Email)).FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task<User> CreateUser(CreateUserRequest req)
+        public async Task<UserResponse> CreateUser(CreateUserRequest req)
         {
             var u = new User { Name = req.Name, Surname = req.Surname, DisplayName = req.DisplayName, Email = req.Email};
 
@@ -32,7 +33,7 @@ namespace GameStore.Api.Services
 
             await _db.SaveChangesAsync();
 
-            return u;
+            return new UserResponse(u.Id, u.Name, u.Surname, u.DisplayName, u.Email);
         }
 
         public async Task<bool> UpdateUser(int userId, UpdateUserRequest req)
@@ -60,7 +61,7 @@ namespace GameStore.Api.Services
             return true;
         }
 
-        public async Task<User?> TryDeleteUser(int userId)
+        public async Task<UserResponse?> TryDeleteUser(int userId)
         {
             var userToBeDeleted = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
@@ -71,7 +72,44 @@ namespace GameStore.Api.Services
 
             await _db.SaveChangesAsync();
 
-            return userToBeDeleted;
+            return new UserResponse(userToBeDeleted.Id, userToBeDeleted.Name, userToBeDeleted.Surname, userToBeDeleted.DisplayName, userToBeDeleted.Email);
+        }
+
+        public async Task<bool> AddGameToUserLibrary(int userId, int gameId)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var game = await _db.Games.FirstOrDefaultAsync(g => g.Id == gameId);
+
+            if (user != null && game != null)
+            {
+                // Add the game, if it already exists, we will catch the exception
+                user.Games.Add(game);
+
+                try
+                {
+                    await _db.SaveChangesAsync();
+                }
+                catch(DbUpdateException e)
+                {
+                    // Unique constraint/index violation means this user already owns the game, so we return true again.
+                    if(e.InnerException is SqlException sql && (sql.Number == 2627 || sql.Number == 2601))
+                    {
+                        return true;
+                    }
+
+                    throw;
+                }
+
+                return true;
+            }
+
+            return false;
+            
+        }
+
+        public async Task<IEnumerable<GameResponse>> GetUserLibrary(int userId)
+        {
+            return await _db.Users.Where(u => u.Id == userId).SelectMany(u => u.Games).Select(g => new GameResponse(g.Id, g.Name, g.Price, g.Genre)).ToArrayAsync();
         }
     }
 }

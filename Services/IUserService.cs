@@ -4,14 +4,19 @@ namespace GameStore.Api.Services
 {
     public interface IUserService
     {
-        Task<IEnumerable<User>> GetAllUsers();
+        Task<IEnumerable<UserResponse>> GetAllUsers();
 
-        Task<User?> TryGetUserById(int id);
+        Task<UserResponse?> TryGetUserById(int id);
 
-        Task<User> CreateUser(CreateUserRequest req);
+        Task<UserResponse> CreateUser(CreateUserRequest req);
 
         Task<bool> UpdateUser(int userId, UpdateUserRequest req);
 
-        Task<User?> TryDeleteUser(int userId);
+        Task<UserResponse?> TryDeleteUser(int userId);
+
+        // User Library of Games
+        Task<bool> AddGameToUserLibrary(int userId, int gameId);
+
+        Task<IEnumerable<GameResponse>> GetUserLibrary(int userId);
     }
 }

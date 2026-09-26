@@ -16,13 +16,13 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Game>>> GetAllUsers()
+        public async Task<ActionResult<IEnumerable<UserResponse>>> GetAllUsers()
         {
             return Ok(await _userService.GetAllUsers());
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUserById([FromRoute] int id)
+        public async Task<ActionResult<UserResponse>> GetUserById([FromRoute] int id)
         {
             var u = await _userService.TryGetUserById(id);
 
@@ -56,7 +56,7 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteGame([FromRoute] int id)
+        public async Task<ActionResult<UserResponse?>> DeleteUser([FromRoute] int id)
         {
             var u = await _userService.TryDeleteUser(id);
 
@@ -66,6 +66,24 @@ namespace GameStore.Api.Controllers
             }
 
             return NotFound();
+        }
+
+        // Games of Users
+        [HttpPost("{userId}/games/{gameId}")]
+        public async Task<ActionResult> AddGameToUserLibrary([FromRoute] int userId, [FromRoute] int gameId)
+        {
+            if (await _userService.AddGameToUserLibrary(userId, gameId))
+            {
+                return Ok();
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet("{userId}/games")]
+        public async Task<ActionResult<IEnumerable<GameResponse>>> GetUserLibrary([FromRoute] int userId)
+        {
+            return Ok(await _userService.GetUserLibrary(userId));
         }
     }
 }

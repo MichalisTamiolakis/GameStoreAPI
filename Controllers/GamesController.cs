@@ -16,13 +16,13 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Game>>> GetAllGames()
+        public async Task<ActionResult<IEnumerable<GameResponse>>> GetAllGames()
         {
             return Ok(await _gameService.GetAllGames());
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Game>> GetGameById([FromRoute] int id)
+        public async Task<ActionResult<GameResponse>> GetGameById([FromRoute] int id)
         {
             var g = await _gameService.TryGetGameById(id);
 
@@ -56,7 +56,7 @@ namespace GameStore.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteGame([FromRoute] int id)
+        public async Task<ActionResult<GameResponse?>> DeleteGame([FromRoute] int id)
         {
             var g = await _gameService.TryDeleteGame(id);
 

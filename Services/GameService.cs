@@ -13,18 +13,30 @@ namespace GameStore.Api.Services
             this._db = db;
         }
 
-        public async Task<IEnumerable<Game>> GetAllGames()
+        public async Task<IEnumerable<GameResponse>> GetAllGames()
         {
-            return await _db.Games.ToArrayAsync();
+            return await _db.Games.Select(g => new GameResponse(
+
+                g.Id,
+                g.Name,
+                g.Price,
+                g.Genre
+            )).ToArrayAsync();
         }
 
 
-        public async Task<Game?> TryGetGameById(int id)
+        public async Task<GameResponse?> TryGetGameById(int id)
         {
-            return await _db.Games.FirstOrDefaultAsync(g => g.Id == id);
+            return await _db.Games.Select(g => new GameResponse(
+
+                g.Id,
+                g.Name,
+                g.Price,
+                g.Genre
+            )).FirstOrDefaultAsync(g => g.Id == id);
         }
 
-        public async Task<Game> CreateGame(CreateGameRequest req)
+        public async Task<GameResponse> CreateGame(CreateGameRequest req)
         {
             var g = new Game { Name = req.Name, Price = req.Price, Genre = req.Genre };
 
@@ -32,7 +44,7 @@ namespace GameStore.Api.Services
             
             await _db.SaveChangesAsync();
 
-            return g;
+            return new GameResponse(g.Id, g.Name, g.Price, g.Genre);
         }
 
         public async Task<bool> UpdateGame(int gameId, UpdateGameRequest req)
@@ -66,7 +78,7 @@ namespace GameStore.Api.Services
             return true;
         }
 
-        public  async Task<Game?> TryDeleteGame(int gameId)
+        public  async Task<GameResponse?> TryDeleteGame(int gameId)
         {
             var gameToBeDeleted = await _db.Games.FirstOrDefaultAsync(g => g.Id == gameId);
 
@@ -77,7 +89,7 @@ namespace GameStore.Api.Services
 
             await _db.SaveChangesAsync();
 
-            return gameToBeDeleted;
+            return new GameResponse(gameToBeDeleted.Id, gameToBeDeleted.Name, gameToBeDeleted.Price, gameToBeDeleted.Genre);
         }
     }
 }
