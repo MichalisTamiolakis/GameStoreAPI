@@ -9,7 +9,7 @@ namespace GameStore.Api.Services
     {
         private readonly GameStoreContext _db;
 
-        public UserService(GameStoreContext db, IGameService gameService)
+        public UserService(GameStoreContext db)
         {
             this._db = db;
         }
@@ -22,12 +22,22 @@ namespace GameStore.Api.Services
 
         public async Task<UserResponse?> TryGetUserById(int id)
         {
-            return await _db.Users.Select(u => new UserResponse(u.Id, u.Name, u.Surname, u.DisplayName, u.Email)).FirstOrDefaultAsync(u => u.Id == id);
+            return await _db.Users.Where(u => u.Id == id).Select(u => new UserResponse(u.Id, u.Name, u.Surname, u.DisplayName, u.Email)).FirstOrDefaultAsync();
         }
 
         public async Task<UserResponse> CreateUser(CreateUserRequest req)
         {
-            var u = new User { Name = req.Name, Surname = req.Surname, DisplayName = req.DisplayName, Email = req.Email};
+            var displayName = req.DisplayName?.Trim();
+            if (string.IsNullOrWhiteSpace(displayName)) 
+            {
+                displayName = $"{req.Name}{req.Surname}";
+                if(displayName.Length > 100)
+                {
+                    displayName = displayName.Substring(0, 100);
+                }
+            }
+
+            var u = new User { Name = req.Name, Surname = req.Surname, DisplayName = displayName, Email = req.Email};
 
             await _db.AddAsync(u);
 
@@ -51,9 +61,9 @@ namespace GameStore.Api.Services
                 user.Email = req.Email;
             }
 
-            if (req.DisplayName is not null)
+            if (!string.IsNullOrWhiteSpace(req.DisplayName))
             {
-                user.DisplayName = req.DisplayName;
+                user.DisplayName = req.DisplayName.Trim();
             }
 
             await _db.SaveChangesAsync();

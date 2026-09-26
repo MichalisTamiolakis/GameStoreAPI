@@ -27,18 +27,18 @@ namespace GameStore.Api.Services
 
         public async Task<GameResponse?> TryGetGameById(int id)
         {
-            return await _db.Games.Select(g => new GameResponse(
+            return await _db.Games.Where(g => g.Id == id).Select(g => new GameResponse(
 
                 g.Id,
                 g.Name,
                 g.Price,
                 g.Genre
-            )).FirstOrDefaultAsync(g => g.Id == id);
+            )).FirstOrDefaultAsync();
         }
 
         public async Task<GameResponse> CreateGame(CreateGameRequest req)
         {
-            var g = new Game { Name = req.Name, Price = req.Price, Genre = req.Genre };
+            var g = new Game { Name = req.Name, Price = req.Price.Value, Genre = req.Genre };
 
             await _db.AddAsync(g);
             
@@ -58,7 +58,7 @@ namespace GameStore.Api.Services
 
             // Update only given fields.
 
-            if(req.Name is not null)
+            if(!string.IsNullOrWhiteSpace(req.Name))
             {
                 game.Name = req.Name;
             }
@@ -68,7 +68,7 @@ namespace GameStore.Api.Services
                 game.Price = req.Price.Value;
             }
 
-            if (req.Genre is not null)
+            if (!string.IsNullOrWhiteSpace(req.Genre))
             {
                 game.Genre = req.Genre;
             }

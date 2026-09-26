@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using GameStore.Api.Models;
 using GameStore.Api.Services;
 
 namespace GameStore.Api.Controllers
@@ -21,7 +20,7 @@ namespace GameStore.Api.Controllers
             return Ok(await _gameService.GetAllGames());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<GameResponse>> GetGameById([FromRoute] int id)
         {
             var g = await _gameService.TryGetGameById(id);
@@ -44,7 +43,7 @@ namespace GameStore.Api.Controllers
                 g);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult> UpdateGame([FromRoute] int id, [FromBody] UpdateGameRequest reqParams)
         {
             if(await _gameService.UpdateGame(id, reqParams))
@@ -55,7 +54,7 @@ namespace GameStore.Api.Controllers
             return NotFound();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<ActionResult<GameResponse?>> DeleteGame([FromRoute] int id)
         {
             var g = await _gameService.TryDeleteGame(id);

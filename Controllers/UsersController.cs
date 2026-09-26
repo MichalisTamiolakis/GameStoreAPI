@@ -1,5 +1,4 @@
-﻿using GameStore.Api.Models;
-using GameStore.Api.Services;
+﻿using GameStore.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameStore.Api.Controllers
@@ -21,7 +20,7 @@ namespace GameStore.Api.Controllers
             return Ok(await _userService.GetAllUsers());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<UserResponse>> GetUserById([FromRoute] int id)
         {
             var u = await _userService.TryGetUserById(id);
@@ -44,7 +43,7 @@ namespace GameStore.Api.Controllers
                 u);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult> UpdateUser([FromRoute] int id, [FromBody] UpdateUserRequest reqParams)
         {
             if (await _userService.UpdateUser(id, reqParams))
@@ -55,7 +54,7 @@ namespace GameStore.Api.Controllers
             return NotFound();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<ActionResult<UserResponse?>> DeleteUser([FromRoute] int id)
         {
             var u = await _userService.TryDeleteUser(id);
@@ -69,7 +68,7 @@ namespace GameStore.Api.Controllers
         }
 
         // Games of Users
-        [HttpPost("{userId}/games/{gameId}")]
+        [HttpPost("{userId:int}/games/{gameId:int}")]
         public async Task<ActionResult> AddGameToUserLibrary([FromRoute] int userId, [FromRoute] int gameId)
         {
             if (await _userService.AddGameToUserLibrary(userId, gameId))
@@ -80,7 +79,7 @@ namespace GameStore.Api.Controllers
             return NotFound();
         }
 
-        [HttpGet("{userId}/games")]
+        [HttpGet("{userId:int}/games")]
         public async Task<ActionResult<IEnumerable<GameResponse>>> GetUserLibrary([FromRoute] int userId)
         {
             return Ok(await _userService.GetUserLibrary(userId));
