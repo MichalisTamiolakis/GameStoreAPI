@@ -38,6 +38,12 @@ namespace GameStore.Api.Controllers
         {
             var u = await _userService.CreateUser(reqParams);
 
+            if(u == null)
+            {
+                ModelState.AddModelError("Email", "Email already exists");
+                return Conflict(ModelState);
+            }
+
             return CreatedAtAction(nameof(GetUserById),
                 new { id = u.Id },
                 u);

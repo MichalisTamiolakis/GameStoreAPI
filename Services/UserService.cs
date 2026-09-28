@@ -1,5 +1,6 @@
 ﻿using GameStore.Api.Data;
 using GameStore.Api.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,7 +26,7 @@ namespace GameStore.Api.Services
             return await _db.Users.Where(u => u.Id == id).Select(u => new UserResponse(u.Id, u.Name, u.Surname, u.DisplayName, u.Email)).FirstOrDefaultAsync();
         }
 
-        public async Task<UserResponse> CreateUser(CreateUserRequest req)
+        public async Task<UserResponse?> CreateUser(CreateUserRequest req)
         {
             var displayName = req.DisplayName?.Trim();
             if (string.IsNullOrWhiteSpace(displayName)) 
@@ -37,11 +38,24 @@ namespace GameStore.Api.Services
                 }
             }
 
-            var u = new User { Name = req.Name, Surname = req.Surname, DisplayName = displayName, Email = req.Email};
+            var u = new User { Name = req.Name, Surname = req.Surname, DisplayName = displayName, Email = req.Email.Trim().ToLower()};
 
             await _db.AddAsync(u);
 
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch(DbUpdateException e)
+            {
+                // Email exists
+                if (e.InnerException is SqlException sql && (sql.Number == 2601))
+                {
+                    return null;
+                }
+
+                throw;
+            }
 
             return new UserResponse(u.Id, u.Name, u.Surname, u.DisplayName, u.Email);
         }
@@ -58,7 +72,7 @@ namespace GameStore.Api.Services
             // Update only given fields.
             if (req.Email is not null)
             {
-                user.Email = req.Email;
+                user.Email = req.Email.Trim().ToLower();
             }
 
             if (!string.IsNullOrWhiteSpace(req.DisplayName))

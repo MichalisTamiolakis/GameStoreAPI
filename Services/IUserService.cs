@@ -8,7 +8,7 @@ namespace GameStore.Api.Services
 
         Task<UserResponse?> TryGetUserById(int id);
 
-        Task<UserResponse> CreateUser(CreateUserRequest req);
+        Task<UserResponse?> CreateUser(CreateUserRequest req);
 
         Task<bool> UpdateUser(int userId, UpdateUserRequest req);
 

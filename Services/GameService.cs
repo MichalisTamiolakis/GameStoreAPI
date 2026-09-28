@@ -38,7 +38,7 @@ namespace GameStore.Api.Services
 
         public async Task<GameResponse> CreateGame(CreateGameRequest req)
         {
-            var g = new Game { Name = req.Name, Price = req.Price.Value, Genre = req.Genre };
+            var g = new Game { Name = req.Name.Trim(), Price = req.Price.Value, Genre = req.Genre.Trim() };
 
             await _db.AddAsync(g);
             

@@ -2,5 +2,5 @@
 
 namespace GameStore.Api.Services
 {
-    public record UpdateUserRequest([StringLength(100)] string? DisplayName, [EmailAddress] string? Email);
+    public record UpdateUserRequest([StringLength(32)] string? DisplayName, [EmailAddress, StringLength(254)] string? Email);
 }
